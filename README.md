@@ -1,5 +1,3 @@
-# eraisubs
-
 ## Setup
 Debian
 ```
