@@ -14,16 +14,18 @@ import re
 
 ROOT = Path(__file__).resolve().parent
 FAV_FILE = ROOT / 'erai.txt'
-CONFIG =  ROOT / 'config.json'
+CONFIG = ROOT / 'config.json'
 
 
 def parse_arguments():
     parser = OptionParser()
+    parser.add_option('-d', dest='dir', default=Path.cwd(), metavar='PATH',
+                      help='Path to save downloaded files')
     parser.add_option('-f', dest='favorites', action='store_true',
                       help='List favorites')
-    parser.add_option('-d', dest='delete', action='store_true',
-                      help='Delete entry from favorites')
-    parser.add_option('-r', dest='release', action='store_true',
+    parser.add_option('-r', dest='remove', action='store_true',
+                      help='Remove entry from favorites')
+    parser.add_option('-l', dest='latest', action='store_true',
                       help='List the latest releases')
     parser.add_option('-y', dest='year', type='int', metavar='YEAR',
                       help='Start from year')
@@ -75,7 +77,7 @@ def load_cookies_from_cookie_jar(session, cookie_file):
     return cj
 
 
-def create_session(cookie_string=None, cookie_file=None):
+def create_session(cookie_string=None, cookie_file=None, **kw):
     session = requests.Session()
     session.headers.update({'User-Agent': 'Mozilla/5.0'})
 
@@ -98,17 +100,22 @@ def create_session(cookie_string=None, cookie_file=None):
     return session
 
 
-def download(session, url):
+def download(session, url, path=None):
     r = session.get(url, stream=True)
     filename = unquote(url.split('/')[-1])
-    with open(filename, 'wb') as f:
+    if path:
+        path /= filename
+    else:
+        path = filename
+
+    with open(path, 'wb') as f:
         f.write(r.content)
-    print(filename, 'saved')
+    print(path, 'saved')
 
 
-def get_soup(s, url):
+def get_soup(session, url):
     # TODO: check for errors, don't use assert for this.
-    r = s.get(url)
+    r = session.get(url)
     assert r.ok
     return BS(r.text, 'html.parser')
 
@@ -137,11 +144,12 @@ def load_config():
     except Exception:
         return {
             'cookie_file': None,
-            'cookie_string': None
+            'cookie_string': None,
         }
 
 
 def main(opts, args):
+    dl_dir = Path(opts.dir)
     config = load_config()
     base_url = 'https://www.erai-raws.info/subs/'
     url = f'{base_url}?dir=Sub'
@@ -154,7 +162,7 @@ def main(opts, args):
             return
         url = f'{base_url}?dir={quote(favorites[sel[0]])}'
 
-    elif opts.delete:
+    elif opts.remove:
         favorites = load_favorites()
         sel = select(favorites)
         for i in sel:
@@ -165,7 +173,7 @@ def main(opts, args):
 
     elif opts.year:
         url = f'{base_url}?dir=Sub/{opts.year}'
-    elif opts.release:
+    elif opts.latest:
         q = (datetime.now().month - 1) // 3
         s = ['Winter', 'Spring', 'Summer', 'Fall'][q]
         y = datetime.now().year
@@ -195,7 +203,7 @@ def main(opts, args):
         for i in sel:
             href = files[i]
             if is_file.match(href):
-                download(session, f'{base_url}{href}')
+                download(session, f'{base_url}{href}', dl_dir)
             else:
                 url = href if href.startswith('http') else f'{base_url}{href}'
 
