@@ -24,3 +24,5 @@ Options:
   -C FILE     Path to cookie file
   -c COOKIE   Cookie string
 ```
+
+![demo](demo.gif)
