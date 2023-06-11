@@ -8,11 +8,13 @@ from http.cookiejar import MozillaCookieJar
 import subprocess as sp
 import requests
 import sqlite3 as sql
+import json
 import re
 
 
 HOME = Path.home()
 FAV_FILE = HOME / '.cache/erai.txt'
+CONFIG = Path(__file__).resolve().parent / 'config.json'
 
 
 def parse_arguments():
@@ -37,7 +39,7 @@ def select(args):
     fzf_args = [
         '-m',
         '-d', '/',
-        '--with-nth', '-1',
+        '--with-nth', '2..',
         '--height', '25',
         '--cycle',
         '--tac',
@@ -111,11 +113,15 @@ def get_soup(s, url):
 
 
 def get_files(soup):
-    return [
-        a['href']
-        for a in soup.find(id='directory-listing').find_all('a', href=True)
-        if not a['href'].endswith('/subs/')
-    ]
+    try:
+        return [
+            a['href']
+            for a in soup.find(id='directory-listing').find_all('a', href=True)
+            if not a['href'].endswith('/subs/')
+        ]
+    except AttributeError:
+        print('Nothing found, check if you are logged in.')
+        exit(1)
 
 
 def load_favorites():
@@ -123,7 +129,19 @@ def load_favorites():
         return [i.strip() for i in f.readlines() if i]
 
 
+def load_config():
+    try:
+        with open(CONFIG, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return {
+            'cookie_file': None,
+            'cookie_string': None
+        }
+
+
 def main(opts, args):
+    config = load_config()
     base_url = 'https://www.erai-raws.info/subs/'
     url = f'{base_url}?dir=Sub'
     is_file = re.compile(r'.*\.(zip|rar|7z|vtt|sub|ass|srt)$', re.IGNORECASE)
@@ -152,8 +170,16 @@ def main(opts, args):
         y = datetime.now().year
         url = f'{base_url}?dir=Sub/{y}/{s}'
 
-    session = create_session(cookie_string=opts.cookie,
-                             cookie_file=opts.cookie_file)
+    if opts.cookie_file:
+        config['cookie_file'] = opts.cookie_file
+    if opts.cookie:
+        config['cookie_string'] = opts.cookie
+    if opts.cookie_file or opts.cookie:
+        with open(CONFIG, 'w') as f:
+            json.dump(config, f)
+
+    session = create_session(**config)
+
     dirs = {}
     while True:
         if url not in dirs:
