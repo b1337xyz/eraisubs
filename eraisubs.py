@@ -40,12 +40,13 @@ def select(args):
         '-m',
         '-d', '/',
         '--with-nth', '2..',
-        '--height', '25',
+        '--height', '20',
         '--cycle',
         '--tac',
         '--reverse',
+        '--keep-right',
         '--bind', f'ctrl-f:execute(echo {{}} >> {FAV_FILE})',
-        '--bind', 'ctrl-a:select-all',
+        '--bind', 'ctrl-a:toggle-all',
         '--header', 'ctrl-f add to favorites | ctrl-a select-all'
     ]
     p = sp.Popen(
