@@ -12,9 +12,9 @@ import json
 import re
 
 
-HOME = Path.home()
-FAV_FILE = HOME / '.cache/erai.txt'
-CONFIG = Path(__file__).resolve().parent / 'config.json'
+ROOT = Path(__file__).resolve().parent
+FAV_FILE = ROOT / 'erai.txt'
+CONFIG =  ROOT / 'config.json'
 
 
 def parse_arguments():
