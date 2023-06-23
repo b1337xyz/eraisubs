@@ -33,6 +33,8 @@ def parse_arguments():
                       help='Path to cookie file')
     parser.add_option('-c', dest='cookie', metavar='COOKIE',
                       help='Cookie string')
+    parser.add_option('-v', dest='verbose', action='store_true',
+                      help='Enable verbose mode')
     return parser.parse_args()
 
 
@@ -191,6 +193,9 @@ def main(opts, args):
 
     dirs = {}
     while True:
+        if opts.verbose:
+            print(url)
+
         if url not in dirs:
             soup = get_soup(session, url)
             dirs[url] = get_files(soup)
