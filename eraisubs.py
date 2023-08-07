@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 from bs4 import BeautifulSoup as BS
-from optparse import OptionParser
+from argparse import ArgumentParser
 from datetime import datetime
 from urllib.parse import quote, unquote
 from http.cookiejar import MozillaCookieJar
@@ -18,23 +18,24 @@ CONFIG = ROOT / 'config.json'
 
 
 def parse_arguments():
-    parser = OptionParser()
-    parser.add_option('-d', dest='dir', default=Path.cwd(), metavar='PATH',
+    parser = ArgumentParser()
+    parser.add_argument('-d', dest='dir', default=Path.cwd(), metavar='PATH',
                       help='Path to save downloaded files')
-    parser.add_option('-f', dest='favorites', action='store_true',
+    parser.add_argument('-f', dest='favorites', action='store_true',
                       help='List favorites')
-    parser.add_option('-r', dest='remove', action='store_true',
+    parser.add_argument('-r', dest='remove', action='store_true',
                       help='Remove entry from favorites')
-    parser.add_option('-l', dest='latest', action='store_true',
+    parser.add_argument('-l', dest='latest', action='store_true',
                       help='List the latest releases')
-    parser.add_option('-y', dest='year', type='int', metavar='YEAR',
+    parser.add_argument('-y', dest='year', type=int, metavar='YEAR',
                       help='Start from year')
-    parser.add_option('-C', dest='cookie_file', metavar='FILE',
+    parser.add_argument('-C', dest='cookie_file', metavar='FILE',
                       help='Path to cookie file')
-    parser.add_option('-c', dest='cookie', metavar='COOKIE',
+    parser.add_argument('-c', dest='cookie', metavar='COOKIE',
                       help='Cookie string')
-    parser.add_option('-v', dest='verbose', action='store_true',
+    parser.add_argument('-v', dest='verbose', action='store_true',
                       help='Enable verbose mode')
+    parser.add_argument('argv', nargs='*')
     return parser.parse_args()
 
 
@@ -214,5 +215,5 @@ def main(opts, args):
 
 
 if __name__ == '__main__':
-    opts, args = parse_arguments()
-    main(opts, args)
+    opts = parse_arguments()
+    main(opts, opts.argv)
