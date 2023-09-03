@@ -1,12 +1,17 @@
 ## Setup
 Debian
 ```
-sudo apt install fzf python3-bs4 python3-requests
+sudo apt install fzf python3-pip
 ```
 
-Arch
+Arch Linux
 ```
-sudo pacman -Syu fzf python-bs4 python-requests
+sudo pacman -Syu fzf python-pip
+```
+
+> Recommended: [Creating a virtual environment](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment)
+```
+pip install -r requirements.txt
 ```
 
 ---
